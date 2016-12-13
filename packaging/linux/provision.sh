@@ -6,17 +6,15 @@ AWS_ACCESS_KEY_ID=$3
 AWS_ACCESS_KEY=$4
 CLI_BRANCH=$5
 PACKAGER_BRANCH=$6
-export PREMIUM=$7
+export REPO=$7
 
 CORE_TAG_NAME="4.0m9"
 
-curl https://raw.githubusercontent.com/cloudify-cosmo/cloudify-packager/$CORE_TAG_NAME/common/provision.sh -o ./common-provision.sh &&
+curl -u $GITHUB_USERNAME:$GITHUB_PASSWORD https://raw.githubusercontent.com/cloudify-cosmo/$REPO/new-versioning/packages-urls/provision.sh -o ./common-params.sh &&
+source common-params.sh &&
+curl https://raw.githubusercontent.com/cloudify-cosmo/cloudify-packager/new-versioning/common/provision.sh -o ./common-provision.sh &&
 source common-provision.sh
 
-if [ "$PREMIUM" == "true" ]; then
-    export AWS_S3_PATH=$AWS_S3_PATH"/"$PREMIUM_FOLDER
-fi
-echo "AWS_S3_PATH=$AWS_S3_PATH"
 
 install_common_prereqs &&
 rm -rf cloudify-cli
