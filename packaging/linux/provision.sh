@@ -7,8 +7,7 @@ AWS_ACCESS_KEY=$4
 CLI_BRANCH=$5
 PACKAGER_BRANCH=$6
 export REPO=$7
-
-CORE_TAG_NAME="4.0m9"
+export CORE_TAG_NAME="4.0m9"
 
 curl -u $GITHUB_USERNAME:$GITHUB_PASSWORD https://raw.githubusercontent.com/cloudify-cosmo/$REPO/new-versioning/packages-urls/provision.sh -o ./common-params.sh &&
 source common-params.sh &&
