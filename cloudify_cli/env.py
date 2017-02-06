@@ -417,11 +417,15 @@ class ProfileContext(yaml.YAMLObject):
             constants.CLOUDIFY_PROFILE_CONTEXT_FILE_NAME)
         return context_path
 
+    @property
+    def workdir(self):
+        return os.path.join(PROFILES_DIR, self.manager_ip)
+
     def save(self, destination=None):
         if not self.manager_ip:
             raise CloudifyCliError('No Manager IP set')
 
-        workdir = destination or os.path.join(PROFILES_DIR, self.manager_ip)
+        workdir = destination or self.workdir
         # Create a new file
         if not os.path.exists(workdir):
             os.makedirs(workdir)
@@ -495,8 +499,10 @@ class ClusterHTTPClient(HTTPClient):
         if node['manager_ip'] == self.host:
             return
         self.host = node['manager_ip']
-        self.port = node.get('rest_port', self.port)
-        self.protocol = node.get('rest_protocol', self.protocol)
+        for attr in ['rest_port', 'rest_protocol', 'trust_all', 'cert']:
+            new_value = node.get(attr)
+            if new_value:
+                setattr(self, attr, new_value)
         self._update_profile(node)
 
     def _update_profile(self, node):

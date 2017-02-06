@@ -14,14 +14,15 @@
 # limitations under the License.
 ############
 
-
+import os
 import time
+import shutil
 from datetime import datetime
 
 from cloudify_rest_client.exceptions import (CloudifyClientError,
                                              NotClusterMaster)
 
-from .. import env
+from .. import constants, env
 from ..cli import cfy
 from ..table import print_data
 from ..exceptions import CloudifyCliError
@@ -145,7 +146,8 @@ def join(client,
         rest_port=joined_profile.rest_port,
         rest_protocol=joined_profile.rest_protocol,
         username=joined_profile.manager_username,
-        password=joined_profile.manager_password)
+        password=joined_profile.manager_password,
+        cluster=joined_profile.cluster)
     cluster_status = cluster_client.cluster.status()
 
     encryption_key = cluster_status.encryption_key
@@ -276,8 +278,17 @@ def remove_node(client, logger, cluster_node_name):
 
 
 def _make_node_from_profile():
-    return {node_attr: getattr(env.profile, node_attr)
+    node = {node_attr: getattr(env.profile, node_attr)
             for node_attr in env.CLUSTER_NODE_ATTRS}
+    cert_file = env.get_ssl_cert()
+    profile_cert = os.path.join(env.profile.workdir,
+                                constants.PUBLIC_REST_CERT)
+    shutil.copy(cert_file, profile_cert)
+    node.update({
+        'cert': profile_cert,
+        'trust_all': env.get_ssl_trust_all()
+    })
+    return node
 
 
 def _init_cluster_profile():
